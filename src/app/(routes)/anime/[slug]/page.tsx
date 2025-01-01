@@ -6,6 +6,7 @@ import { use, useEffect, useState } from 'react';
 
 interface Anime {
   title: string;
+  synopsis: string;
   imageUrl: string;
   details: {
     judul: string;
@@ -23,21 +24,21 @@ interface Anime {
   batch: [
     {
       title: string;
-      url: string;
+      slug: string;
       date: string;
     }
   ];
   single: [
     {
       title: string;
-      url: string;
+      slug: string;
       date: string;
     }
   ];
   lengkap: [
     {
       title: string;
-      url: string;
+      slug: string;
       date: string;
     }
   ];
@@ -84,14 +85,21 @@ export default function AnimeDetailPage({
               <p>{anime.details.durasi}</p>
               <p>{anime.details.tanggalrilis}</p>
               <p>{anime.details.totalepisode}</p>
+              <p>{anime.details.skor}</p>
+              <p>{anime.details.produser}</p>
+              <p>{anime.details.tipe}</p>
+              <p>{anime.details.status}</p>
+              <p>{anime.details.studio}</p>
+              <p>{anime.details.genre}</p>
             </div>
           </div>
+          <p>{anime.synopsis}</p>
           <div className="flex flex-col">
-            Batch
+            <h3>Batch</h3>
             {anime.batch.length ? (
               anime.batch.map((b, index) => {
                 return (
-                  <Link key={index} href={b.url}>
+                  <Link key={index} href={`/batch/${b.slug}`}>
                     {b.title}
                   </Link>
                 );
@@ -104,7 +112,7 @@ export default function AnimeDetailPage({
             <h3>Episode</h3>
             {anime.single.map((s, index) => {
               return (
-                <Link key={index} href={s.url}>
+                <Link key={index} href={`/episode/${s.slug}`}>
                   {s.title}
                 </Link>
               );
@@ -115,7 +123,7 @@ export default function AnimeDetailPage({
             {anime.lengkap.length ? (
               anime.lengkap.map((l, index) => {
                 return (
-                  <Link key={index} href={l.url}>
+                  <Link key={index} href={`/lengkap/${l.slug}`}>
                     {l.title}
                   </Link>
                 );
