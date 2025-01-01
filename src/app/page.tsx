@@ -14,8 +14,8 @@ export default function HomePage() {
       try {
         const res = await fetch('http://localhost:3000/api/home');
         const data = await res.json();
-        setOngoAnimes(data.ongoing);
-        setComplAnimes(data.complete);
+        setOngoAnimes(data.data.ongoing);
+        setComplAnimes(data.data.complete);
       } catch (error) {
         console.error(error);
       }

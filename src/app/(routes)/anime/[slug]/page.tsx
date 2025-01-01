@@ -58,7 +58,7 @@ export default function AnimeDetailPage({
       try {
         const res = await fetch(`/api/anime/${slug}`);
         const data = await res.json();
-        setAnime(data);
+        setAnime(data.data);
       } catch (error) {
         console.log(error);
       }

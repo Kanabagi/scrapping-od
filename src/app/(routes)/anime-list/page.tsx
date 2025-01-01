@@ -22,7 +22,7 @@ export default function AnimeListPage() {
       try {
         const res = await fetch('http://localhost:3000/api/anime');
         const data = await res.json();
-        setAnimes(data.animes);
+        setAnimes(data.data);
       } catch (error) {
         console.error(error);
       }
