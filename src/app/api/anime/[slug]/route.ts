@@ -54,13 +54,17 @@ export async function GET(
     });
 
     return NextResponse.json({
-      title,
-      synopsis,
-      imageUrl,
-      details,
-      batch: batchEpisodes,
-      single: singleEpisodes,
-      lengkap: lengkapEpisodes,
+      status: 200,
+      message: 'success',
+      data: {
+        title,
+        synopsis,
+        imageUrl,
+        details,
+        batch: batchEpisodes,
+        single: singleEpisodes,
+        lengkap: lengkapEpisodes,
+      },
     });
   } catch (error) {
     console.log(error);
