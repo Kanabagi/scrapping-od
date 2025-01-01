@@ -93,7 +93,7 @@ export default function AnimeDetailPage({
             </div>
           </div>
           <div className="flex flex-col">
-            Batch
+            <h3>Batch</h3>
             {anime.batch.length ? (
               anime.batch.map((b, index) => {
                 return (
@@ -118,13 +118,17 @@ export default function AnimeDetailPage({
           </div>
           <div className="flex flex-col">
             <h3>Lengkap</h3>
-            {anime.lengkap.map((l, index) => {
-              return (
-                <Link key={index} href={`/lengkap/${l.slug}`}>
-                  {l.title}
-                </Link>
-              );
-            })}
+            {anime.lengkap.length ? (
+              anime.lengkap.map((l, index) => {
+                return (
+                  <Link key={index} href={`/lengkap/${l.slug}`}>
+                    {l.title}
+                  </Link>
+                );
+              })
+            ) : (
+              <p>Lengkap belum ada</p>
+            )}
           </div>
         </div>
       )}
