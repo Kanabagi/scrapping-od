@@ -40,7 +40,6 @@ export async function GET() {
       }
     });
 
-    // Transform grouped object into the desired array format
     const animes = Object.keys(groupedAnimeList)
       .sort() // Ensure alphabetical order
       .map((key) => ({
@@ -48,7 +47,6 @@ export async function GET() {
         data: groupedAnimeList[key],
       }));
 
-    // Return the transformed data as JSON
     return NextResponse.json(
       { animes },
       {
