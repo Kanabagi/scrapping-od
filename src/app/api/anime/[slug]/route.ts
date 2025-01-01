@@ -43,12 +43,9 @@ export async function GET(
       const date = $(el).find('.zeebr').text().trim();
 
       // Categorize episodes
-      if (title.toLowerCase().includes('batch')) {
+      if (fullUrl.toLowerCase().includes('batch')) {
         batchEpisodes.push({ title, slug, date });
-      } else if (
-        title.toLowerCase().includes('sub indo') &&
-        title.toLowerCase().includes('end')
-      ) {
+      } else if (fullUrl.toLowerCase().includes('lengkap')) {
         lengkapEpisodes.push({ title, slug, date });
       } else {
         singleEpisodes.push({ title, slug, date });

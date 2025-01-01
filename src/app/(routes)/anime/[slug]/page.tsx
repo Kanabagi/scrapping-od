@@ -23,21 +23,21 @@ interface Anime {
   batch: [
     {
       title: string;
-      url: string;
+      slug: string;
       date: string;
     }
   ];
   single: [
     {
       title: string;
-      url: string;
+      slug: string;
       date: string;
     }
   ];
   lengkap: [
     {
       title: string;
-      url: string;
+      slug: string;
       date: string;
     }
   ];
@@ -84,6 +84,12 @@ export default function AnimeDetailPage({
               <p>{anime.details.durasi}</p>
               <p>{anime.details.tanggalrilis}</p>
               <p>{anime.details.totalepisode}</p>
+              <p>{anime.details.skor}</p>
+              <p>{anime.details.produser}</p>
+              <p>{anime.details.tipe}</p>
+              <p>{anime.details.status}</p>
+              <p>{anime.details.studio}</p>
+              <p>{anime.details.genre}</p>
             </div>
           </div>
           <div className="flex flex-col">
@@ -91,7 +97,7 @@ export default function AnimeDetailPage({
             {anime.batch.length ? (
               anime.batch.map((b, index) => {
                 return (
-                  <Link key={index} href={b.url}>
+                  <Link key={index} href={`/batch/${b.slug}`}>
                     {b.title}
                   </Link>
                 );
@@ -104,7 +110,7 @@ export default function AnimeDetailPage({
             <h3>Episode</h3>
             {anime.single.map((s, index) => {
               return (
-                <Link key={index} href={s.url}>
+                <Link key={index} href={`/episode/${s.slug}`}>
                   {s.title}
                 </Link>
               );
@@ -112,17 +118,13 @@ export default function AnimeDetailPage({
           </div>
           <div className="flex flex-col">
             <h3>Lengkap</h3>
-            {anime.lengkap.length ? (
-              anime.lengkap.map((l, index) => {
-                return (
-                  <Link key={index} href={l.url}>
-                    {l.title}
-                  </Link>
-                );
-              })
-            ) : (
-              <p>Lengkap belum ada</p>
-            )}
+            {anime.lengkap.map((l, index) => {
+              return (
+                <Link key={index} href={`/lengkap/${l.slug}`}>
+                  {l.title}
+                </Link>
+              );
+            })}
           </div>
         </div>
       )}
