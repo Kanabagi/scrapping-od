@@ -11,24 +11,16 @@ export interface AnimeItem {
   slug: string;
 }
 
-interface ScrapingResponse {
-  ongoing: AnimeItem[];
-  complete: AnimeItem[];
-}
-
 export async function GET() {
   try {
     const { data: html } = await axios.get('https://otakudesu.cloud/');
     const $ = cheerio.load(html);
 
-    const results: ScrapingResponse = {
-      ongoing: [],
-      complete: [],
-    };
+    const ongoing: AnimeItem[] = [];
+    const complete: AnimeItem[] = [];
 
     $('.rseries .rapi').each((_, categoryElement) => {
       const categoryTitle = $(categoryElement).find('#rvod h1').text().trim();
-      const animeItems: AnimeItem[] = [];
 
       $(categoryElement)
         .find('.venz ul li .detpost')
@@ -42,28 +34,36 @@ export async function GET() {
           const slug = link.split('/').filter(Boolean).pop() || '';
 
           if (title && image) {
-            animeItems.push({ title, episode, info, releaseDate, image, slug });
+            const animeItem: AnimeItem = {
+              title,
+              episode,
+              info,
+              releaseDate,
+              image,
+              slug,
+            };
+            if (categoryTitle === 'On-going Anime') {
+              ongoing.push(animeItem);
+            } else if (categoryTitle === 'Complete Anime') {
+              complete.push(animeItem);
+            }
           }
         });
-
-      if (categoryTitle === 'On-going Anime') {
-        results.ongoing = animeItems;
-      } else if (categoryTitle === 'Complete Anime') {
-        results.complete = animeItems;
-      }
     });
 
-    return NextResponse.json(results, {
+    return NextResponse.json({
       status: 200,
-      headers: {
-        'Cache-Control': 'public, max-age=300',
-        'Content-Type': 'application/json',
-      },
+      message: 'success',
+      data: { ongoing, complete },
     });
   } catch (error) {
     console.error('Error during scraping:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch anime data' },
+      {
+        status: 500,
+        message: 'Failed to fetch anime data',
+        data: [],
+      },
       { status: 500 }
     );
   }

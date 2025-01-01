@@ -40,23 +40,18 @@ export async function GET() {
       }
     });
 
-    const animes = Object.keys(groupedAnimeList)
+    const data = Object.keys(groupedAnimeList)
       .sort() // Ensure alphabetical order
       .map((key) => ({
         label: key,
         data: groupedAnimeList[key],
       }));
 
-    return NextResponse.json(
-      { animes },
-      {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'public, max-age=300', // Cache for 5 minutes
-        },
-      }
-    );
+    return NextResponse.json({
+      status: 200,
+      message: 'success',
+      data,
+    });
   } catch (error) {
     console.error('Error scraping Anime List:', error);
     return NextResponse.json(
