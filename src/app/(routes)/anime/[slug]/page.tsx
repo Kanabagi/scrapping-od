@@ -6,6 +6,7 @@ import { use, useEffect, useState } from 'react';
 
 interface Anime {
   title: string;
+  synopsis: string;
   imageUrl: string;
   details: {
     judul: string;
@@ -92,6 +93,7 @@ export default function AnimeDetailPage({
               <p>{anime.details.genre}</p>
             </div>
           </div>
+          <p>{anime.synopsis}</p>
           <div className="flex flex-col">
             <h3>Batch</h3>
             {anime.batch.length ? (

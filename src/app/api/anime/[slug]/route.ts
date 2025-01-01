@@ -16,6 +16,7 @@ export async function GET(
 
     const title = $('.jdlrx h1').text().trim();
     const imageUrl = $('.fotoanime img').attr('src') || '';
+    const synopsis = $('.sinopc').text().trim();
     const details: Record<string, string> = {};
 
     // Extract details
@@ -54,6 +55,7 @@ export async function GET(
 
     return NextResponse.json({
       title,
+      synopsis,
       imageUrl,
       details,
       batch: batchEpisodes,
