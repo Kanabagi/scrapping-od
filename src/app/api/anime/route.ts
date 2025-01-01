@@ -13,7 +13,7 @@ export async function GET() {
     // Temporary object to group anime titles by their starting letter
     const groupedAnimeList: Record<
       string,
-      { title: string; url: string; slug: string }[]
+      { title: string; url?: string; slug: string }[]
     > = {};
 
     // Select all anime links from the anime list section
@@ -36,7 +36,7 @@ export async function GET() {
         }
 
         // Add the anime to the corresponding group
-        groupedAnimeList[firstLetter].push({ title, url, slug });
+        groupedAnimeList[firstLetter].push({ title, slug });
       }
     });
 
