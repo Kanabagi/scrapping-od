@@ -6,7 +6,7 @@ const NAV_LIST = [
   { name: 'Complete', href: '/complete' },
   { name: 'Anime List', href: '/anime-list' },
   { name: 'Jadwal Rilis', href: '/jadwal-rilis' },
-  { name: 'Genre List', href: '/genre-list' },
+  { name: 'Genre List', href: '/genres' },
 ];
 
 export default function Navbar() {
