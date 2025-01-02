@@ -62,8 +62,6 @@ export async function GET(
                     };
                 }
             });
-
-            // Add this download entry to the result
             downloadUrl.push({
                 title,
                 qualities,
