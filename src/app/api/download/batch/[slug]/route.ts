@@ -31,11 +31,11 @@ export async function GET(
         const $ = cheerio.load(html);
         const downloadUrl: Download[] = [];
 
-        // Loop through each <h4> and process its associated <ul>
+
         $('h4').each((_, h4Element) => {
             const title = $(h4Element).text().trim();
 
-            // Process the <ul> that follows this <h4>
+
             const ulElement = $(h4Element).next('ul');
             const qualities: { [quality: string]: Quality } = {};
 
