@@ -5,15 +5,9 @@ import * as cheerio from 'cheerio';
 export async function GET() {
     try {
         // Fetch HTML from the Anime List page
-        const { data: html } = await axios.get('https://otakudesu.cloud/anime-list/', {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
-                'Accept-Language': 'en-US,en;q=0.9',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-                'Connection': 'keep-alive',
-                'Referer': 'https://otakudesu.cloud/',
-            },
-        });
+        const { data: html } = await axios.get(
+            'https://otakudesu.cloud/anime-list/'
+        );
 
         const $ = cheerio.load(html);
 
