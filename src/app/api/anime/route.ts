@@ -8,7 +8,6 @@ export async function GET() {
         const { data: html } = await axios.get(
             'https://otakudesu.cloud/anime-list/'
         );
-
         const $ = cheerio.load(html);
 
         // Temporary object to group anime titles by their starting letter
@@ -55,11 +54,7 @@ export async function GET() {
         });
     } catch (error) {
         console.error('Error scraping Anime List:', error);
-        if (axios.isAxiosError(error)) {
-            console.error('Error details:', error.response?.status, error.response?.data, error.message);
-        } else {
-            console.error('Error details:', error);
-        }
+        console.error('Error details:', error.response?.status, error.response?.data, error.message);
         return NextResponse.json(
             { error: 'Failed to fetch anime list' },
             { status: 500 }
