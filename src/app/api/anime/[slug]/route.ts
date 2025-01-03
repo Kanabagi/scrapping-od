@@ -17,7 +17,7 @@ export async function GET(
     const title = $('.jdlrx h1').text().trim();
     const imageUrl = $('.fotoanime img').attr('src') || '';
     const synopsis = $('.sinopc').text().trim();
-    const details: Record<string, string> = {};
+    const details: Record<string, string | string[]> = {};
 
     // Extract details
     $('.infozingle p').each((_, el) => {
@@ -28,7 +28,23 @@ export async function GET(
         .replace(':', '')
         .toLowerCase()
         .replace(/\s+/g, ''); // Convert to lowercase and remove spaces
-      const value = $(el).text().replace(`${key}:`, '').trim();
+      let value: string | string[] = $(el).text().replace(`${key}:`, '').trim();
+
+      // Handle specific keys
+      if (key === 'genre') {
+        value = value
+          .replace('Genre: ', '')
+          .split(',')
+          .map((item) => item.trim());
+      } else if (key === 'produser') {
+        value = value
+          .replace('Produser: ', '')
+          .split(',')
+          .map((item) => item.trim());
+      } else {
+        value = value.replace(/^[^:]*:\s*/, ''); // Remove prefix like "Judul:", "Skor:", etc.
+      }
+
       details[key] = value;
     });
 
