@@ -17,6 +17,12 @@ interface Download {
   qualities: { [quality: string]: Quality[] };
 }
 
+interface OtherEpisode {
+  title: string;
+  url: string;
+  slug: string;
+}
+
 export async function GET(
   req: NextResponse,
   { params }: { params: { slug: string } }
@@ -29,26 +35,25 @@ export async function GET(
     const html = response.data;
     const $ = cheerio.load(html);
 
-    // Improve streaming URL extraction
-    // Try multiple possible selectors
+    // Extract title from the page
+    const streamingTitle = $('h1.posttl').text().trim();
+
+    // Extract streaming URL
     let streamingUrl =
       $('#oframeplayerjs video').attr('src') ||
       $('.pjscssed video').attr('src') ||
       $('#playerjs video').attr('src') ||
       $('video').attr('src');
 
-    // If still null, try looking for iframe src
     if (!streamingUrl) {
       streamingUrl =
         $('#pjsfrrsplayerjs').attr('src') || $('iframe').attr('src');
     }
 
-    // If still null, try looking in script tags
     if (!streamingUrl) {
       const scripts = $('script').toArray();
       for (const script of scripts) {
         const content = $(script).html() || '';
-        // Look for common patterns in script content
         const urlMatch =
           content.match(/source:\s*['"]([^'"]+)['"]/i) ||
           content.match(/src:\s*['"]([^'"]+)['"]/i);
@@ -59,7 +64,7 @@ export async function GET(
       }
     }
 
-    // Scrape download URLs (unchanged)
+    // Scrape download URLs
     const downloadUrl: Download[] = [];
     $('h4').each((_, h4Element) => {
       const title = $(h4Element).text().trim();
@@ -103,13 +108,33 @@ export async function GET(
       });
     });
 
+    // Scrape other episodes
+    const otherEps: OtherEpisode[] = [];
+    $('#selectcog option').each((_, optionElement) => {
+      const title = $(optionElement).text().trim();
+      const episodeUrl = $(optionElement).attr('value');
+
+      if (episodeUrl && title !== 'Pilih Episode Lainnya') {
+        const slug = episodeUrl.split('/').slice(-2, -1)[0];
+        otherEps.push({
+          title,
+          url: episodeUrl,
+          slug,
+        });
+      }
+    });
+
     return NextResponse.json({
       status: 200,
       message: 'success',
       data: [
         {
-          streamingUrl,
+          streaming: {
+            streamingTitle,
+            streamingUrl,
+          },
           downloadUrl,
+          otherEps,
         },
       ],
     });
