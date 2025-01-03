@@ -19,7 +19,6 @@ interface Download {
 
 interface OtherEpisode {
   title: string;
-  url: string;
   slug: string;
 }
 
@@ -118,7 +117,6 @@ export async function GET(
         const slug = episodeUrl.split('/').slice(-2, -1)[0];
         otherEps.push({
           title,
-          url: episodeUrl,
           slug,
         });
       }
