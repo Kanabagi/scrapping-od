@@ -26,7 +26,7 @@ export async function GET(
   req: NextResponse,
   { params }: { params: { slug: string } }
 ) {
-  const { slug } = params;
+  const { slug } = await params;
   const url = `https://otakudesu.cloud/episode/${slug}/`;
 
   try {

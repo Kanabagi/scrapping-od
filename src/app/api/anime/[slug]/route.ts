@@ -27,22 +27,13 @@ export async function GET(
         .trim()
         .replace(':', '')
         .toLowerCase()
-        .replace(/\s+/g, ''); // Convert to lowercase and remove spaces
+        .replace(/\s+/g, '');
       let value: string | string[] = $(el).text().replace(`${key}:`, '').trim();
 
-      // Handle specific keys
-      if (key === 'genre') {
-        value = value
-          .replace('Genre: ', '')
-          .split(',')
-          .map((item) => item.trim());
-      } else if (key === 'produser') {
-        value = value
-          .replace('Produser: ', '')
-          .split(',')
-          .map((item) => item.trim());
+      if (key === 'genre' || key === 'produser') {
+        value = value.split(',').map((item) => item.trim());
       } else {
-        value = value.replace(/^[^:]*:\s*/, ''); // Remove prefix like "Judul:", "Skor:", etc.
+        value = value.replace(/^[^:]*:\s*/, '');
       }
 
       details[key] = value;
@@ -56,11 +47,11 @@ export async function GET(
     $('.episodelist ul li').each((_, el) => {
       const title = $(el).find('a').text().trim();
       const fullUrl = $(el).find('a').attr('href') || '';
-      const slug = fullUrl.split('/').filter(Boolean).pop() || ''; // Ambil slug dari URL
+      const slug = fullUrl.split('/').filter(Boolean).pop() || '';
       const date = $(el).find('.zeebr').text().trim();
 
       if (fullUrl.toLowerCase().includes('batch')) {
-        batchSlug = slug; // Simpan slug untuk batch
+        batchSlug = slug;
       } else if (fullUrl.toLowerCase().includes('lengkap')) {
         lengkapEpisodes.push({ title, slug, date });
       } else {
@@ -75,18 +66,28 @@ export async function GET(
       const batchResponse = await axios.get(batchUrl);
       const batchHtml = batchResponse.data;
       const batch$ = cheerio.load(batchHtml);
-      const batchData: { title: string; qualities: Record<string, unknown> }[] =
-        [];
+      const batchData: {
+        title: string;
+        data: {
+          quality: string;
+          size: string;
+          source: { name: string; url: string }[];
+        }[];
+      }[] = [];
 
       batch$('h4').each((_, h4Element) => {
         const batchTitle = batch$(h4Element).text().trim();
         const ulElement = batch$(h4Element).next('ul');
-        const qualities: Record<string, unknown> = {};
+        const data: {
+          quality: string;
+          size: string;
+          source: { name: string; url: string }[];
+        }[] = [];
 
         ulElement.find('li').each((__, liElement) => {
           const quality = batch$(liElement).find('strong').text().trim();
           const size = batch$(liElement).find('i').text().trim();
-          const sources: { name: string; url: string }[] = [];
+          const source: { name: string; url: string }[] = [];
 
           batch$(liElement)
             .find('a')
@@ -94,16 +95,16 @@ export async function GET(
               const name = batch$(link).text().trim();
               const url = batch$(link).attr('href') || '';
               if (name && url) {
-                sources.push({ name, url });
+                source.push({ name, url });
               }
             });
 
           if (quality) {
-            qualities[quality] = { size, sources };
+            data.push({ quality, size, source });
           }
         });
 
-        batchData.push({ title: batchTitle, qualities });
+        batchData.push({ title: batchTitle, data });
       });
 
       batch = batchData;

@@ -3,81 +3,82 @@ import axios from 'axios';
 import * as cheerio from 'cheerio';
 
 interface Source {
-    name: string;
-    url: string;
+  name: string;
+  url: string;
 }
 
-interface Quality {
-    size: string;
-    sources: Source[];
+interface Data {
+  quality: string;
+  size: string;
+  source: Source[];
 }
 
 interface Download {
-    title: string;
-    qualities: { [quality: string]: Quality };
+  title: string;
+  data: Data[];
 }
 
 export async function GET(
-    req: NextResponse,
-    { params }: { params: { slug: string } }
+  req: NextResponse,
+  { params }: { params: { slug: string } }
 ) {
-    const { slug } = params;
-    const url = `https://otakudesu.cloud/batch/${slug}/`;
+  const { slug } = params;
+  const url = `https://otakudesu.cloud/batch/${slug}/`;
 
-    try {
-        const response = await axios.get(url);
-        const html = response.data;
+  try {
+    const response = await axios.get(url);
+    const html = response.data;
 
-        const $ = cheerio.load(html);
-        const downloadUrl: Download[] = [];
+    const $ = cheerio.load(html);
+    const downloadUrl: Download[] = [];
 
+    $('h4').each((_, h4Element) => {
+      const title = $(h4Element).text().trim();
+      const ulElement = $(h4Element).next('ul');
 
-        $('h4').each((_, h4Element) => {
-            const title = $(h4Element).text().trim();
+      const data: Data[] = [];
 
+      ulElement.find('li').each((__, liElement) => {
+        const quality = $(liElement).find('strong').text().trim();
+        const size = $(liElement).find('i').text().trim();
+        const source: Source[] = [];
 
-            const ulElement = $(h4Element).next('ul');
-            const qualities: { [quality: string]: Quality } = {};
+        $(liElement)
+          .find('a')
+          .each((___, link) => {
+            const name = $(link).text().trim();
+            const url = $(link).attr('href') || '';
 
-            ulElement.find('li').each((__, liElement) => {
-                const qualityText = $(liElement).find('strong').text().trim();
-                const sizeText = $(liElement).find('i').text().trim();
-                const sources: Source[] = [];
+            if (name && url) {
+              source.push({ name, url });
+            }
+          });
 
-                $(liElement)
-                    .find('a')
-                    .each((___, link) => {
-                        const name = $(link).text().trim();
-                        const url = $(link).attr('href') || '';
+        if (quality && source.length > 0) {
+          data.push({
+            quality,
+            size,
+            source,
+          });
+        }
+      });
 
-                        if (name && url) {
-                            sources.push({ name, url });
-                        }
-                    });
+      downloadUrl.push({
+        title,
+        data,
+      });
+    });
 
-                if (qualityText && sources.length > 0) {
-                    qualities[qualityText] = {
-                        size: sizeText,
-                        sources,
-                    };
-                }
-            });
-            downloadUrl.push({
-                title,
-                qualities,
-            });
-        });
-
-        return NextResponse.json({
-            status: 200,
-            message: 'success',
-            downloadUrl,
-        });
-    } catch (error) {
-        console.error(error);
-        return NextResponse.json(
-            { error: 'Failed to fetch data' },
-            { status: 500 }
-        );
-    }
+    return NextResponse.json({
+      status: 200,
+      message: 'success',
+      downloadUrl,
+    });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { error: 'Failed to fetch data' },
+      { status: 500 }
+    );
+  }
 }
