@@ -27,7 +27,7 @@ export async function GET(
   req: NextResponse,
   { params }: { params: { slug: string } }
 ) {
-  const { slug } = params;
+  const { slug } = await params;
   const url = `https://otakudesu.cloud/episode/${slug}/`;
 
   try {
@@ -100,6 +100,26 @@ export async function GET(
       }
     });
 
+    // Extract navigation links
+    // Extract navigation links and slugs
+    const navigation = {
+      prevEps:
+        $('.flir a[title="Episode Sebelumnya"]')
+          .attr('href')
+          ?.split('/')
+          .slice(-2, -1)[0] || null,
+      allEps:
+        $('.flir a:contains("See All Episodes")')
+          .attr('href')
+          ?.split('/')
+          .slice(-2, -1)[0] || null,
+      nextEps:
+        $('.flir a[title="Episode Selanjutnya"]')
+          .attr('href')
+          ?.split('/')
+          .slice(-2, -1)[0] || null,
+    };
+
     return NextResponse.json({
       status: 200,
       message: 'success',
@@ -110,6 +130,7 @@ export async function GET(
         },
         downloadUrl,
         otherEps,
+        navigation,
       },
     });
   } catch (error) {
