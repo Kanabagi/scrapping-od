@@ -6,7 +6,7 @@ export async function GET(
   req: Request,
   { params }: { params: { slug: string } }
 ) {
-  const { slug } = params;
+  const { slug } = await params;
 
   const url = `https://otakudesu.cloud/anime/${slug}/`;
   try {
@@ -31,7 +31,9 @@ export async function GET(
       let value: string | string[] = $(el).text().replace(`${key}:`, '').trim();
 
       if (key === 'genre' || key === 'produser') {
-        value = value.split(',').map((item) => item.trim());
+        value = value
+          .split(',')
+          .map((item) => item.replace(/^(produser|genre):\s*/i, '').trim());
       } else {
         value = value.replace(/^[^:]*:\s*/, '');
       }
