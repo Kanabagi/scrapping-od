@@ -7,14 +7,15 @@ interface Source {
   url: string;
 }
 
-interface Quality {
+interface DownloadData {
+  quality: string;
   size: string;
-  sources: Source[];
+  source: Source[];
 }
 
-interface Download {
+interface DownloadUrl {
   title: string;
-  qualities: { [quality: string]: Quality[] };
+  data: DownloadData[];
 }
 
 interface OtherEpisode {
@@ -26,7 +27,7 @@ export async function GET(
   req: NextResponse,
   { params }: { params: { slug: string } }
 ) {
-  const { slug } = await params;
+  const { slug } = params;
   const url = `https://otakudesu.cloud/episode/${slug}/`;
 
   try {
@@ -34,10 +35,8 @@ export async function GET(
     const html = response.data;
     const $ = cheerio.load(html);
 
-    // Extract title from the page
+    // Extract streaming data
     const streamingTitle = $('h1.posttl').text().trim();
-
-    // Extract streaming URL
     let streamingUrl =
       $('#oframeplayerjs video').attr('src') ||
       $('.pjscssed video').attr('src') ||
@@ -49,70 +48,49 @@ export async function GET(
         $('#pjsfrrsplayerjs').attr('src') || $('iframe').attr('src');
     }
 
-    if (!streamingUrl) {
-      const scripts = $('script').toArray();
-      for (const script of scripts) {
-        const content = $(script).html() || '';
-        const urlMatch =
-          content.match(/source:\s*['"]([^'"]+)['"]/i) ||
-          content.match(/src:\s*['"]([^'"]+)['"]/i);
-        if (urlMatch && urlMatch[1]) {
-          streamingUrl = urlMatch[1];
-          break;
-        }
-      }
-    }
-
-    // Scrape download URLs
-    const downloadUrl: Download[] = [];
+    // Extract download data
+    const downloadUrl: DownloadUrl[] = [];
     $('h4').each((_, h4Element) => {
       const title = $(h4Element).text().trim();
-      const ulElements = $(h4Element).nextUntil('h4', 'ul');
-      const qualities: { [quality: string]: Quality[] } = {};
+      const data: DownloadData[] = [];
 
-      ulElements.each((__, ulElement) => {
-        $(ulElement)
-          .find('li')
-          .each((___, liElement) => {
-            const qualityText = $(liElement).find('strong').text().trim();
-            const sizeText = $(liElement).find('i').text().trim();
-            const sources: Source[] = [];
+      $(h4Element)
+        .next('ul')
+        .find('li')
+        .each((__, liElement) => {
+          const quality = $(liElement).find('strong').text().trim();
+          const size = $(liElement).find('i').text().trim();
+          const source: Source[] = [];
 
-            $(liElement)
-              .find('a')
-              .each((____, link) => {
-                const name = $(link).text().trim();
-                const url = $(link).attr('href') || '';
-
-                if (name && url) {
-                  sources.push({ name, url });
-                }
-              });
-
-            if (qualityText && sources.length > 0) {
-              if (!qualities[qualityText]) {
-                qualities[qualityText] = [];
+          $(liElement)
+            .find('a')
+            .each((___, link) => {
+              const name = $(link).text().trim();
+              const url = $(link).attr('href') || '';
+              if (name && url) {
+                source.push({ name, url });
               }
-              qualities[qualityText].push({
-                size: sizeText,
-                sources,
-              });
-            }
-          });
-      });
+            });
 
-      downloadUrl.push({
-        title,
-        qualities,
-      });
+          if (quality && source.length > 0) {
+            data.push({
+              quality,
+              size,
+              source,
+            });
+          }
+        });
+
+      if (title && data.length > 0) {
+        downloadUrl.push({ title, data });
+      }
     });
 
-    // Scrape other episodes
+    // Extract other episodes
     const otherEps: OtherEpisode[] = [];
     $('#selectcog option').each((_, optionElement) => {
       const title = $(optionElement).text().trim();
       const episodeUrl = $(optionElement).attr('value');
-
       if (episodeUrl && title !== 'Pilih Episode Lainnya') {
         const slug = episodeUrl.split('/').slice(-2, -1)[0];
         otherEps.push({
@@ -125,23 +103,22 @@ export async function GET(
     return NextResponse.json({
       status: 200,
       message: 'success',
-      data: [
-        {
-          streaming: {
-            streamingTitle,
-            streamingUrl,
-          },
-          downloadUrl,
-          otherEps,
+      data: {
+        streaming: {
+          streamingTitle,
+          streamingUrl,
         },
-      ],
+        downloadUrl,
+        otherEps,
+      },
     });
   } catch (error) {
-    console.error('Error details:', error);
+    console.error('Error fetching data:', error);
     return NextResponse.json(
       {
-        error: 'Failed to fetch data',
-        details:
+        status: 500,
+        message: 'Failed to fetch data',
+        error:
           process.env.NODE_ENV === 'development' ? String(error) : undefined,
       },
       { status: 500 }
