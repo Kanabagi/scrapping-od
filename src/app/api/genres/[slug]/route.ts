@@ -4,7 +4,7 @@ import * as cheerio from 'cheerio';
 
 export interface AnimeItem {
     title: string;
-    episodes: string;
+    episode: string;
     info: string;
     genres: string[];
     image: string;
@@ -60,7 +60,7 @@ export async function GET(
             if (title) {
                 animeList.push({
                     title,
-                    episodes: $(element).find('.col-anime-eps').text().trim(),
+                    episode: $(element).find('.col-anime-eps').text().trim(),
                     info: $(element).find('.col-anime-rating').text().trim(),
                     genres: $(element)
                         .find('.col-anime-genre a')
