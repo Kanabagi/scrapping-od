@@ -2,148 +2,114 @@ import { NextResponse } from 'next/server';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 
-interface AnimeItem {
-  title: string;
-  episodes: string;
-  rating: string;
-  genres: string[];
-  coverImage: string;
-  releaseDate: string;
-  slug: string;
-}
-
-interface PaginationResponse {
-  status: number;
-  message: string;
-  current_page: number;
-  last_visible_page: number;
-  has_next_page: boolean;
-  next_page: number | null;
-  has_previous_page: boolean;
-  previous_page: number | null;
-  data: AnimeItem[];
+export interface AnimeItem {
+    title: string;
+    episodes: string;
+    info: string;
+    genres: string[];
+    image: string;
+    releaseDate: string;
+    slug: string;
 }
 
 export async function GET(
-  request: Request,
-  { params }: { params: { slug: string } }
-): Promise<NextResponse<PaginationResponse>> {
-  const { slug } = params;
+    req: Request,
+    { params }: { params: { slug: string } }
+) {
+    const { slug } = params;
+    const urlParams = new URL(req.url).searchParams;
 
-  const { searchParams } = new URL(request.url);
-  const requestedPage = searchParams.get('page');
-  const currentPage = Math.max(1, parseInt(requestedPage || '1', 10));
-  const limit = 15;
+    const page = parseInt(urlParams.get('page') || '1', 10);
+    const limit = parseInt(urlParams.get('limit') || '12', 10);
 
-  try {
     if (!slug) {
-      throw new Error('Genre slug is required');
+        return NextResponse.json(
+            {
+                status: 400,
+                message: 'Genre slug is required',
+                data: [],
+            },
+            { status: 400 }
+        );
     }
 
-    const baseUrl = 'https://otakudesu.cloud/genres';
-    const url =
-      currentPage === 1
-        ? `${baseUrl}/${slug}/`
-        : `${baseUrl}/${slug}/page/${currentPage}/`;
+    try {
+        const baseUrl = 'https://otakudesu.cloud/genres/';
+        const url =
+            page === 1
+                ? `${baseUrl}${slug}/`
+                : `${baseUrl}${slug}/page/${page}/`;
 
-    const response = await axios.get(url, {
-      timeout: 10000,
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-      },
-    });
+        console.log(`Scraping slug: ${slug}, page: ${page}`);
 
-    const $ = cheerio.load(response.data);
-    const animes: AnimeItem[] = [];
-
-    // Extract anime data
-    $('.col-anime-con').each((_, element) => {
-      try {
-        const title = $(element).find('.col-anime-title a').text().trim();
-        if (!title) return;
-
-        const detailUrl =
-          $(element).find('.col-anime-title a').attr('href') || '';
-        const slug = detailUrl.split('/').filter(Boolean).pop() || '';
-
-        animes.push({
-          title,
-          episodes: $(element).find('.col-anime-eps').text().trim(),
-          rating: $(element).find('.col-anime-rating').text().trim(),
-          genres: $(element)
-            .find('.col-anime-genre a')
-            .map((_, el) => $(el).text().trim())
-            .get(),
-          coverImage: $(element).find('.col-anime-cover img').attr('src') || '',
-          releaseDate: $(element).find('.col-anime-date').text().trim(),
-          slug,
+        const { data: html } = await axios.get(url, {
+            timeout: 10000,
+            headers: {
+                'User-Agent':
+                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            },
         });
-      } catch (err) {
-        console.error('Error parsing anime item:', err);
-      }
-    });
+        const $ = cheerio.load(html);
 
-    // Improved pagination detection
-    let lastVisiblePage = currentPage;
-    const paginationNumbers: number[] = [];
+        const animeList: AnimeItem[] = [];
+        $('.col-anime-con').each((_, element) => {
+            const title = $(element).find('.col-anime-title a').text().trim();
+            const detailUrl = $(element).find('.col-anime-title a').attr('href') || '';
+            const slug = detailUrl.split('/').filter(Boolean).pop() || '';
 
-    // Extract all page numbers from pagination
-    $('.pagination a').each((_, element) => {
-      const pageText = $(element).text().trim();
-      const pageNum = parseInt(pageText, 10);
-      if (!isNaN(pageNum)) {
-        paginationNumbers.push(pageNum);
-      }
-    });
+            if (title) {
+                animeList.push({
+                    title,
+                    episodes: $(element).find('.col-anime-eps').text().trim(),
+                    info: $(element).find('.col-anime-rating').text().trim(),
+                    genres: $(element)
+                        .find('.col-anime-genre a')
+                        .map((_, el) => $(el).text().trim())
+                        .get(),
+                    image: $(element).find('.col-anime-cover img').attr('src') || '',
+                    releaseDate: $(element).find('.col-anime-date').text().trim(),
+                    slug,
+                });
+            }
+        });
 
-    // Get the highest page number
-    if (paginationNumbers.length > 0) {
-      lastVisiblePage = Math.max(...paginationNumbers);
+        // Use consistent totalPages calculation
+        let totalPages = parseInt($('.pagination .page-numbers:not(.next):not(.prev)').last().text().trim(), 10);
+        if (isNaN(totalPages)) {
+            // Fallback: If pagination is missing, assume a single page
+            totalPages = page;
+        }
+
+        const hasNextPage = page < totalPages;
+        const hasPreviousPage = page > 1;
+
+        const paginatedData = animeList.slice(0, limit);
+
+        return NextResponse.json({
+            status: 200,
+            message: 'success',
+            page,
+            totalPages,
+            hasNextPage,
+            data: paginatedData,
+        });
+    } catch (error) {
+        console.error('Error during scraping:', error);
+
+        const status = axios.isAxiosError(error) && error.response?.status === 404 ? 404 : 500;
+        const message =
+            status === 404 ? 'Genre not found' : 'Failed to fetch anime list';
+
+        return NextResponse.json(
+            {
+                status,
+                message,
+                page,
+                totalPages: 1,
+                hasNextPage: false,
+                data: [],
+            },
+            { status }
+        );
     }
-
-    // Check if there's a next page
-    const hasNextPage = currentPage < lastVisiblePage;
-    const hasPreviousPage = currentPage > 1;
-
-    // Apply limit and return response
-    const paginatedData = animes.slice(0, limit);
-
-    return NextResponse.json({
-      status: 200,
-      message: 'success',
-      current_page: currentPage,
-      last_visible_page: lastVisiblePage,
-      has_next_page: hasNextPage,
-      next_page: hasNextPage ? currentPage + 1 : null,
-      has_previous_page: hasPreviousPage,
-      previous_page: hasPreviousPage ? currentPage - 1 : null,
-      data: paginatedData,
-    });
-  } catch (error) {
-    console.error('Failed to fetch anime list:', error);
-
-    const isAxiosError = axios.isAxiosError(error);
-    const status = isAxiosError ? error.response?.status || 500 : 500;
-    const message = isAxiosError
-      ? status === 404
-        ? 'Genre not found'
-        : 'Failed to fetch anime list'
-      : 'Internal server error';
-
-    return NextResponse.json(
-      {
-        status,
-        message,
-        current_page: currentPage,
-        last_visible_page: currentPage,
-        has_next_page: false,
-        next_page: null,
-        has_previous_page: currentPage > 1,
-        previous_page: currentPage > 1 ? currentPage - 1 : null,
-        data: [],
-      },
-      { status }
-    );
-  }
 }
