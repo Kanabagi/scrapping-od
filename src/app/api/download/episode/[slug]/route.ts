@@ -119,15 +119,19 @@ export async function GET(
                     }
                 });
 
-            const title = $(boxElement)
+            const titleRaw = $(boxElement)
                 .find('.anime-title:first-of-type, .yondarkness-title:first-of-type')
                 .text()
                 .trim();
+
+
+            const title = titleRaw.replace(/\s*\[.*?\]\s*/g, '').trim();
 
             if (title && data.length > 0) {
                 downloadUrl.push({ title, data });
             }
         });
+
 
         // Extract other episodes
         const otherEps: OtherEpisode[] = [];
