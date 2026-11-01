@@ -15,7 +15,7 @@ export async function GET(req: NextResponse, { params }: { params: { query: stri
     const { query } = params;
 
     try {
-        const { data: html } = await axios.get(`https://otakudesu.cloud/?s=${query}&post_type=anime`);
+        const { data: html } = await axios.get(`https://otakudesu.blog/?s=${query}&post_type=anime`);
         const $ = cheerio.load(html);
 
         const animeItems: AnimeItem[] = [];

@@ -8,7 +8,7 @@ export async function GET(
 ) {
   const { slug } = await params;
 
-  const url = `https://otakudesu.cloud/anime/${slug}/`;
+  const url = `https://otakudesu.blog/anime/${slug}/`;
   try {
     const response = await axios.get(url);
     const html = response.data;
@@ -64,7 +64,7 @@ export async function GET(
     // Fetch batch details
     let batch = null;
     if (batchSlug) {
-      const batchUrl = `https://otakudesu.cloud/batch/${batchSlug}/`;
+      const batchUrl = `https://otakudesu.blog/batch/${batchSlug}/`;
       const batchResponse = await axios.get(batchUrl);
       const batchHtml = batchResponse.data;
       const batch$ = cheerio.load(batchHtml);

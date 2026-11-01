@@ -23,7 +23,7 @@ export async function GET(
   { params }: { params: { slug: string } }
 ) {
   const { slug } = params;
-  const url = `https://otakudesu.cloud/batch/${slug}/`;
+  const url = `https://otakudesu.blog/batch/${slug}/`;
 
   try {
     const response = await axios.get(url);

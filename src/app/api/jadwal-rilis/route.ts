@@ -14,7 +14,7 @@ interface Schedule {
 
 export async function GET() {
   try {
-    const url = 'https://otakudesu.cloud/jadwal-rilis/';
+    const url = 'https://otakudesu.blog/jadwal-rilis/';
 
     // Fetch HTML menggunakan Axios
     const { data: html } = await axios.get(url);

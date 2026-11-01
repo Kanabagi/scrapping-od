@@ -6,7 +6,7 @@ export async function GET() {
     try {
         // Fetch HTML from the Anime List page
         const { data: html } = await axios.get(
-            'https://otakudesu.cloud/anime-list/'
+            'https://otakudesu.blog/anime-list/'
         );
         const $ = cheerio.load(html);
 

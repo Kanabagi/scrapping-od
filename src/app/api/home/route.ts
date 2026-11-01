@@ -13,7 +13,7 @@ export interface AnimeItem {
 
 export async function GET() {
   try {
-    const { data: html } = await axios.get('https://otakudesu.cloud/');
+    const { data: html } = await axios.get('https://otakudesu.blog/');
     const $ = cheerio.load(html);
 
     const ongoing: AnimeItem[] = [];

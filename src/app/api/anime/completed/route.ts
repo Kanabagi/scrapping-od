@@ -12,7 +12,7 @@ export interface AnimeItem {
 }
 
 export async function GET(req: Request) {
-    const baseUrl = 'https://otakudesu.cloud/complete-anime/';
+    const baseUrl = 'https://otakudesu.blog/complete-anime/';
     const urlParams = new URL(req.url).searchParams;
 
     // Get the requested page and set default to 1

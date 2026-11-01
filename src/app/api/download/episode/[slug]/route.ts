@@ -28,7 +28,7 @@ export async function GET(
     { params }: { params: { slug: string } }
 ) {
     const { slug } = await params;
-    const url = `https://otakudesu.cloud/episode/${slug}/`;
+    const url = `https://otakudesu.blog/episode/${slug}/`;
 
     try {
         const response = await axios.get(url);
@@ -227,7 +227,7 @@ export async function GET(
 //     { params }: { params: { slug: string } }
 // ) {
 //     const { slug } = await params;
-//     const url = `https://otakudesu.cloud/episode/${slug}/`;
+//     const url = `https://otakudesu.blog/episode/${slug}/`;
 
 //     try {
 //         const response = await axios.get(url);

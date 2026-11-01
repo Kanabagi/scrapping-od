@@ -4,7 +4,7 @@ import * as cheerio from 'cheerio';
 
 export async function GET() {
   try {
-    const url = 'https://otakudesu.cloud/genre-list/';
+    const url = 'https://otakudesu.blog/genre-list/';
     const response = await axios.get(url);
     const html = response.data;
 

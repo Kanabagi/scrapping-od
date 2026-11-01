@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        hostname: 'otakudesu.cloud',
+        hostname: 'otakudesu.blog',
       },
     ],
   },

@@ -34,7 +34,7 @@ export async function GET(
     }
 
     try {
-        const baseUrl = 'https://otakudesu.cloud/genres/';
+        const baseUrl = 'https://otakudesu.blog/genres/';
         const url =
             page === 1
                 ? `${baseUrl}${slug}/`
