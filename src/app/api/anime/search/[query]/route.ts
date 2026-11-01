@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 
@@ -11,11 +11,16 @@ export interface AnimeItem {
     slug: string;
 }
 
-export async function GET(req: NextResponse, { params }: { params: { query: string } }) {
-    const { query } = params;
+export async function GET(
+    req: NextRequest,
+    { params }: { params: Promise<{ query: string }> }
+) {
+    const { query } = await params;
 
     try {
-        const { data: html } = await axios.get(`https://otakudesu.blog/?s=${query}&post_type=anime`);
+        const { data: html } = await axios.get(
+            `https://otakudesu.blog/?s=${encodeURIComponent(query)}&post_type=anime`
+        );
         const $ = cheerio.load(html);
 
         const animeItems: AnimeItem[] = [];
